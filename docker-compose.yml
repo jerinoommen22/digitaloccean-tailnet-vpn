@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  vpn-manager:
+    container_name: vpn-manager
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    volumes:
+      # Persist configuration.
+      # NOTE: Ensure 'server-config.json' exists on the host machine before starting,
+      # otherwise Docker will create it as a directory.
+      # You can create it with: echo "{}" > server-config.json
+      - ./server-config.json:/app/server-config.json
+    restart: unless-stopped

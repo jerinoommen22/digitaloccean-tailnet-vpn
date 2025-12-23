@@ -4,5 +4,6 @@
   body {
     /* Use standard CSS for body defaults if apply fails, or try apply again with correct import */
     @apply bg-slate-950 text-slate-100;
+    overscroll-behavior-y: none;
   }
 }

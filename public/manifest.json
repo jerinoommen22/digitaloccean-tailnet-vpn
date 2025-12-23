@@ -1,0 +1,16 @@
+{
+    "name": "VPN Manager",
+    "short_name": "VPN",
+    "icons": [
+        {
+            "src": "/icon.png",
+            "sizes": "1024x1024",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#020617",
+    "background_color": "#020617",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait"
+}

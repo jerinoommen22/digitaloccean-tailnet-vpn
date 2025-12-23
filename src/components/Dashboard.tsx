@@ -6,6 +6,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { SettingsForm } from '@/components/Settings';
 import { LocationSelector } from '@/components/LocationSelector';
 import { Droplet } from '@/lib/digitalocean';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 
 const fetcher = ([url, token, tailscaleKey, tailnet]: [string, string, string, string]) =>
     fetch(url, {
@@ -28,6 +29,10 @@ export function Dashboard() {
         { refreshInterval: 5000 }
     );
 
+    const { containerRef, isRefreshing, pullDistance } = usePullToRefresh(async () => {
+        await mutate();
+    });
+
     const activeNode = statusData?.activeNodes?.[0];
     const isConnected = !!activeNode;
     const isReady = activeNode?.provisioningStatus === 'ready';
@@ -39,7 +44,7 @@ export function Dashboard() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-do-token': settings.doToken // We don't need tailscale headers for connect, only for status check if we wanted
+                    'x-do-token': settings.doToken
                 },
                 body: JSON.stringify({
                     doToken: settings.doToken,
@@ -74,7 +79,7 @@ export function Dashboard() {
                     tailnet: settings.tailnet
                 })
             });
-            await mutate(); // Force refresh to show disconnected
+            await mutate();
         } catch (e) {
             alert('Failed to disconnect');
             console.error(e);
@@ -106,7 +111,24 @@ export function Dashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100 p-4 pb-20 font-sans">
+        <div ref={containerRef} className="min-h-screen bg-slate-950 text-slate-100 p-4 pb-20 font-sans relative">
+            {/* Pull to Refresh Indicator */}
+            <div
+                className={clsx(
+                    "absolute top-0 left-0 right-0 flex justify-center items-center transition-all duration-200 pointer-events-none",
+                    isRefreshing ? "h-16 opacity-100" : "h-0 opacity-0 overflow-hidden"
+                )}
+                style={{ height: isRefreshing ? 64 : pullDistance > 0 ? pullDistance : 0 }}
+            >
+                {isRefreshing ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+                ) : (
+                    <div style={{ transform: `rotate(${pullDistance * 2}deg)` }}>
+                        <Loader2 className="w-5 h-5 text-slate-500" />
+                    </div>
+                )}
+            </div>
+
             <div className="max-w-md mx-auto space-y-6">
                 {/* Header */}
                 <header className="flex justify-between items-center py-4">
